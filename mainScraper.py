@@ -19,7 +19,7 @@ class mainScraper_test(unittest.TestCase):
         self.driver = webdriver.Chrome()
         self.driver.maximize_window()
 
-    def Scraping_test(self):
+    def test_scraping(self):
 
         ''' 1. Navigate to a start url '''
         pTxt = "\n1. Navigate to a start url: {}\n".format(self.start_url)
@@ -40,27 +40,26 @@ class mainScraper_test(unittest.TestCase):
 
         temp_data = []
         try:
-            table = WebDriverWait(self.driver, 10).until(
-                EC.presence_of_all_elements_located((By.CSS_SELECTOR, "table#tbl-datatable > tbody"))
+            table = WebDriverWait(self.driver, 50).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, "table#tbl-datatable > tbody"))
             )
             rows = table.find_elements_by_tag_name("tr")
 
             j = 0
             for i, row in enumerate(rows):
-                if i is 0 or row.get_attribute("class") is "header":
+                if i is 0 or row.get_attribute("class") == 'header':
                     continue
-                cols = self.driver.find_elements_by_tag_name("td")
+                cols = row.find_elements_by_tag_name("td")
                 airline_name = cols[2].text.strip()
                 airline_code = cols[3].text.strip()
-                link = "https://www.flightradar24.com/data/aircraft" + cols[2].find_element_by_tag_name(
-                    "a").get_attribute("href")
+                link = cols[2].find_element_by_tag_name("a").get_attribute("href")
                 temp_data.append({
                     "airline_name": airline_name,
                     "airline_code": airline_code,
                     "link": link
                 })
 
-                pTxt = "\t\tNo:\t\t{0}\nairline name:\t{1}\nairline code:\t{2}\nlink:\t{}\n".format(j, airline_name,
+                pTxt = "\t\tNo:\t\t\t\t{0}\n\t\tairline name:\t{1}\n\t\tairline code:\t{2}\n\t\tlink:\t\t\t{3}\n".format(j, airline_name,
                                                                                                     airline_code, link)
                 print(pTxt)
                 j += 1
@@ -80,14 +79,23 @@ class mainScraper_test(unittest.TestCase):
         for i, row in enumerate(temp_data):
             self.driver.get(row["link"])
 
-            lies = WebDriverWait(self.driver, 10).until(
+            lies = WebDriverWait(self.driver, 50).until(
                 EC.presence_of_all_elements_located((By.CSS_SELECTOR, "ul.horizontal-slide > li"))
             )
 
             for j, li in enumerate(lies):
-                aircraft_type = li.find_element_by_css_selector("div > div").text.strip()
-                aircraft_type = aircraft_type.replace(li.find_element_by_css_selector("div > div > span").text.strip(),
-                                                      "")
+                if j > 0 and j % 6 == 0:
+                    try:
+                        next_btn = self.driver.find_element_by_css_selector("i.fa.fa-angle-right")
+                        next_btn.click()
+                    except:
+                        pass
+                # aircraft_type = li.find_element_by_css_selector("div > div").text.strip()
+                aircraft_type = WebDriverWait(li, 50).until(
+                    EC.visibility_of_element_located((By.CSS_SELECTOR, "div > div"))
+                )
+                aircraft_type = aircraft_type.text.strip()
+                aircraft_type = aircraft_type.replace(li.find_element_by_css_selector("div > div > span.badge").text.strip(),"")
 
                 sub_rows = li.find_elements_by_css_selector("ul > li")
 
@@ -99,7 +107,7 @@ class mainScraper_test(unittest.TestCase):
                         "aircraft_registration": sub_row.text.strip()
                     })
 
-                    pTxt = "\t\tNo:\t\t{0}\nairline name:\t{1}\nairline code:\t{2}\naircraft type:\t{3}\naircraft reg:\t{4}\n" \
+                    pTxt = "\t\tNo:\t\t\t\t{0}\n\t\tairline name:\t{1}\n\t\tairline code:\t{2}\n\t\taircraft type:\t{3}\n\t\taircraft reg:\t{4}\n" \
                         .format(cnt, row["airline_name"], row["airline_code"], aircraft_type, sub_row.text.strip())
                     print(pTxt)
                     cnt += 1
