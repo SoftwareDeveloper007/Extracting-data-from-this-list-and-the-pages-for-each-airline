@@ -5,12 +5,12 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
-import unittest, csv
+import unittest
+import csv
 
 class mainScraper_test(unittest.TestCase):
 
     def setUp(self):
-
         ''' Initialize Parameters'''
         self.start_url = "https://www.flightradar24.com/data/aircraft/"
         self.output_data = []
@@ -52,14 +52,16 @@ class mainScraper_test(unittest.TestCase):
                 cols = self.driver.find_elements_by_tag_name("td")
                 airline_name = cols[2].text.strip()
                 airline_code = cols[3].text.strip()
-                link = "https://www.flightradar24.com/data/aircraft" + cols[2].find_element_by_tag_name("a").get_attribute("href")
+                link = "https://www.flightradar24.com/data/aircraft" + cols[2].find_element_by_tag_name(
+                    "a").get_attribute("href")
                 temp_data.append({
                     "airline_name": airline_name,
                     "airline_code": airline_code,
                     "link": link
                 })
 
-                pTxt = "\t\tNo:\t\t{0}\nairline name:\t{1}\nairline code:\t{2}\nlink:\t{}\n".format(j, airline_name, airline_code, link)
+                pTxt = "\t\tNo:\t\t{0}\nairline name:\t{1}\nairline code:\t{2}\nlink:\t{}\n".format(j, airline_name,
+                                                                                                    airline_code, link)
                 print(pTxt)
                 j += 1
 
@@ -84,7 +86,8 @@ class mainScraper_test(unittest.TestCase):
 
             for j, li in enumerate(lies):
                 aircraft_type = li.find_element_by_css_selector("div > div").text.strip()
-                aircraft_type = aircraft_type.replace(li.find_element_by_css_selector("div > div > span").text.strip(), "")
+                aircraft_type = aircraft_type.replace(li.find_element_by_css_selector("div > div > span").text.strip(),
+                                                      "")
 
                 sub_rows = li.find_elements_by_css_selector("ul > li")
 
@@ -96,7 +99,7 @@ class mainScraper_test(unittest.TestCase):
                         "aircraft_registration": sub_row.text.strip()
                     })
 
-                    pTxt = "\t\tNo:\t\t{0}\nairline name:\t{1}\nairline code:\t{2}\naircraft type:\t{3}\naircraft reg:\t{4}\n"\
+                    pTxt = "\t\tNo:\t\t{0}\nairline name:\t{1}\nairline code:\t{2}\naircraft type:\t{3}\naircraft reg:\t{4}\n" \
                         .format(cnt, row["airline_name"], row["airline_code"], aircraft_type, sub_row.text.strip())
                     print(pTxt)
                     cnt += 1
@@ -124,6 +127,7 @@ class mainScraper_test(unittest.TestCase):
             ])
 
         output_file.close()
+
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
